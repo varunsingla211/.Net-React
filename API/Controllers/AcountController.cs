@@ -7,11 +7,11 @@ using Microsoft.AspNetCore.Mvc;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Security.Claims;
 using System.Threading.Tasks;
 
 namespace API.Controllers
 {
-    [AllowAnonymous]
     [ApiController]
     [Route("api/[controller]")]
     public class AcountController : ControllerBase
@@ -26,6 +26,7 @@ namespace API.Controllers
             this.tokenService = tokenService;
         }
 
+        [AllowAnonymous]
         [HttpPost("login")]
         public async Task<ActionResult<UserDTO>> Login(LoginDTO loginDto)
         {
@@ -34,17 +35,12 @@ namespace API.Controllers
             var result = await userManager.CheckPasswordAsync(user, loginDto.Password);
             if (result)
             {
-                return new UserDTO
-                {
-                    DisplayName = user.DisplayName,
-                    Image = null,
-                    Token = tokenService.CreateToken(user),
-                    Username = user.UserName
-                };
+                return CreateUser(user);
             }
             return Unauthorized();
         }
 
+        [AllowAnonymous]
         [HttpPost("register")]
         public async Task<ActionResult<UserDTO>> Register(RegisterDTO registerDTO)
         {
@@ -61,15 +57,28 @@ namespace API.Controllers
             var result = userManager.CreateAsync(user, registerDTO.Password);
             if (result.IsCompletedSuccessfully)
             {
-                return new UserDTO
-                {
-                    DisplayName = user.DisplayName,
-                    Image = null,
-                    Token = tokenService.CreateToken(user),
-                    Username = user.UserName,
-                };
+                return CreateUser(user);
             }
             return BadRequest("Problem registering user"); 
+        }
+
+        [Authorize]
+        [HttpGet]
+        public async Task<ActionResult<UserDTO>> GetCurrentUser()
+        {
+            var user = await userManager.FindByEmailAsync(User.FindFirstValue(ClaimTypes.Email));
+            return CreateUser(user);
+        }
+
+        private UserDTO CreateUser(AppUser user)
+        {
+            return new UserDTO
+            {
+                DisplayName = user.DisplayName,
+                Image = null,
+                Token = tokenService.CreateToken(user),
+                Username = user.UserName,
+            };
         }
 
     }
