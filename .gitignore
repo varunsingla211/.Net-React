@@ -1,0 +1,13 @@
+﻿################################################################################
+# This .gitignore file was automatically created by Microsoft(R) Visual Studio.
+################################################################################
+
+/API/bin/Debug/net5.0
+/Application/bin/Debug/net5.0
+/Application/obj
+/Domain/obj
+/Domain/bin/Debug
+/Persistence/bin/Debug/net5.0
+/Persistence/obj
+/API/obj
+/.vs/Reactivities/v16
